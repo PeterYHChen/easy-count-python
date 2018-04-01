@@ -1,28 +1,82 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
+<head>
     <title>Python Flask Starter Application</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="static/stylesheets/style.css">
-  </head>
+    <!-- <link class="jsbin" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" -->
+    <!-- /> -->
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+    <meta charset=utf-8 />
+    <title>JS Bin</title>
+    <style>
+        article,
+        aside,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            display: block;
+        }
+    </style>
+</head>
 
-  <body>
-    <table>
-      <tr>
-        <td style= "width:30%;">
-          <img class = "newappIcon" src="static/images/newapp-icon.png">
-        <td>
-            <h1>Hi Professor, my name is Yonghong Chen and my N number is N19252766. Here is APIs of the key logger!</h1>
-          <p>
-            <span class = "blue"><a href='keys'>key-logger.mybluemix.net/keys</a>:</span> return victim ip address and logged keys from login.html
-          </p>
-          <p>
-            <span class = "blue"><a href='clear'>key-logger.mybluemix.net/clear</a>:</span> reset the key to empty
-          </p>
-    </table>
-  </body>
+<body>
+    <form id="myForm" action="/upload" method="post" enctype="multipart/form-data">
+        <span class="btn btn-default btn-file">
+            Browse
+            <input type="file" name="image" onchange="readURL(this);">
+        </span>
+        <br/>
+        <img id="image" src="#" alt="my image" />
+
+        <input type="submit" value="Upload your image" class="btn btn-primary">
+    </form>
+    <img id="result" src="#" alt="my image" />
+</body>
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#image').attr('src', e.target.result).width(300);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    $("#myForm").submit(function (event) {
+        var myForm = $(this);
+        var file = $('[name="image"]')[0].files[0];
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var dataUrl = reader.result;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/upload", true);
+            xhr.setRequestHeader("Content-type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var json = JSON.parse(xhr.responseText);
+                    console.log(json);
+                    $('#result').attr('src', json['result']).width(300);
+                }
+            };
+            var data = JSON.stringify({ "image": dataUrl });
+            xhr.send(data);
+        };
+        reader.readAsDataURL(file);
+
+        return false;
+    });
+</script>
 
 </html>

